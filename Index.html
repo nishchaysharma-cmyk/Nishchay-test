@@ -1,0 +1,784 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#ff6500">
+
+  <style>
+    :root {
+      --orange: #ff6900;
+      --orange-dark: #e94b00;
+      --ink: #24201f;
+      --muted: #827973;
+      --surface: #fffdfb;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
+      color: var(--ink);
+      background: #ff6800;
+      background-image:
+        radial-gradient(ellipse at 12% 15%, #ffb044 0, transparent 32%),
+        radial-gradient(ellipse at 88% 48%, #ff8a13 0, transparent 35%),
+        linear-gradient(135deg, #ff7900, #ff5000 60%, #f64b00);
+      overflow-x: hidden;
+    }
+
+    /* Ambient animated background */
+    .ambient {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .orb {
+      position: absolute;
+      width: 280px;
+      height: 280px;
+      border-radius: 50%;
+      background: #ffd39b20;
+      border: 1px solid #ffffff18;
+      filter: blur(1px);
+      animation: float 12s ease-in-out infinite alternate;
+    }
+
+    .orb.one { top: 10%; left: -130px; }
+    .orb.two {
+      width: 380px;
+      height: 380px;
+      right: -190px;
+      top: 38%;
+      animation-delay: -4s;
+    }
+
+    .orb.three {
+      width: 180px;
+      height: 180px;
+      bottom: -60px;
+      left: 38%;
+      animation-delay: -7s;
+    }
+
+    @keyframes float {
+      from { transform: translate(0, 0) scale(1); }
+      to { transform: translate(35px, -28px) scale(1.08); }
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      width: min(100% - 36px, 1050px);
+      margin: auto;
+      padding: 36px 0 48px;
+    }
+
+    /* Campaign identity */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      color: white;
+      margin-bottom: 42px;
+      animation: appear .7s ease both;
+    }
+
+    .brand {
+      font-size: 35px;
+      font-weight: 900;
+      letter-spacing: -2.3px;
+      line-height: 1;
+    }
+
+    .brand span {
+      color: #fff3db;
+    }
+
+    .live-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border: 1px solid #ffffff70;
+      border-radius: 50px;
+      background: #ffffff16;
+      backdrop-filter: blur(10px);
+      font-size: 11px;
+      letter-spacing: 1.2px;
+      font-weight: 800;
+    }
+
+    .live-dot {
+      width: 7px;
+      height: 7px;
+      background: #caffad;
+      border-radius: 50%;
+      box-shadow: 0 0 12px #caffad;
+      animation: pulse 1.8s infinite;
+    }
+
+    @keyframes pulse {
+      50% { opacity: .45; box-shadow: 0 0 3px #caffad; }
+    }
+
+    .hero {
+      text-align: center;
+      color: white;
+      padding: 4px 0 35px;
+      animation: appear .8s ease both;
+    }
+
+    .eyebrow {
+      font-size: 11px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      font-weight: 800;
+      opacity: .9;
+      margin-bottom: 19px;
+    }
+
+    .hero h1 {
+      font-size: clamp(46px, 8vw, 82px);
+      letter-spacing: -5px;
+      line-height: .98;
+      margin: 0;
+      font-weight: 950;
+    }
+
+    .hero h1 .outline {
+      color: transparent;
+      -webkit-text-stroke: 1.5px white;
+    }
+
+    .hero p {
+      max-width: 480px;
+      margin: 22px auto 0;
+      font-size: 15px;
+      line-height: 1.7;
+      color: #fff4e8;
+    }
+
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      margin-top: 23px;
+      padding: 11px 20px;
+      border: 1px solid #ffffffa0;
+      border-radius: 8px;
+      background: #ffffff18;
+      font-weight: 900;
+      font-size: 14px;
+      letter-spacing: 2px;
+      box-shadow: 0 6px 24px #a52e0020;
+    }
+
+    /* Navigation */
+    .tabs {
+      display: flex;
+      justify-content: center;
+      gap: 7px;
+      width: fit-content;
+      max-width: 100%;
+      padding: 6px;
+      margin: 0 auto 22px;
+      border: 1px solid #ffffff55;
+      border-radius: 15px;
+      background: #ad350022;
+      backdrop-filter: blur(12px);
+    }
+
+    .tab {
+      padding: 13px 23px;
+      border: 0;
+      border-radius: 10px;
+      background: transparent;
+      color: #fff7f0;
+      cursor: pointer;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 750;
+      transition: background .25s, color .25s, transform .25s;
+    }
+
+    .tab:hover { transform: translateY(-1px); }
+
+    .tab.active {
+      background: white;
+      color: var(--orange-dark);
+      box-shadow: 0 4px 15px #9e330022;
+    }
+
+    .section {
+      animation: appear .45s ease both;
+    }
+
+    .hidden { display: none !important; }
+
+    /* Main panels */
+    .panel {
+      border: 1px solid #ffffffb0;
+      border-radius: 22px;
+      overflow: hidden;
+      background: var(--surface);
+      box-shadow:
+        0 25px 70px #8e30002a,
+        0 3px 10px #8e300010;
+    }
+
+    .panel-head {
+      padding: 24px 26px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      border-bottom: 1px solid #f0e8e2;
+    }
+
+    .panel-title {
+      margin: 0;
+      font-size: 19px;
+      font-weight: 850;
+      letter-spacing: -.5px;
+    }
+
+    .panel-subtitle {
+      margin: 7px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .number-pill {
+      flex-shrink: 0;
+      background: #fff0e5;
+      color: #dc5200;
+      padding: 9px 12px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 850;
+    }
+
+    /* Search interface */
+    .search-area {
+      padding: 25px 26px 18px;
+    }
+
+    .searchbox {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 5px 17px;
+      border: 1px solid #e8ddd5;
+      border-radius: 13px;
+      background: white;
+      transition: border-color .25s, box-shadow .25s;
+    }
+
+    .searchbox:focus-within {
+      border-color: #ff8a39;
+      box-shadow: 0 0 0 4px #ff790018;
+    }
+
+    .search-icon {
+      width: 21px;
+      height: 21px;
+      color: #dc5a10;
+      flex-shrink: 0;
+    }
+
+    .searchbox input {
+      min-width: 0;
+      flex: 1;
+      padding: 13px 0;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      font: inherit;
+      font-size: 14px;
+      color: var(--ink);
+    }
+
+    .searchbox input::placeholder { color: #aaa09a; }
+
+    .keyhint {
+      color: #a49a93;
+      font-size: 10px;
+      white-space: nowrap;
+    }
+
+    .helper {
+      padding-top: 12px;
+      font-size: 11px;
+      color: #9b9088;
+    }
+
+    /* Table */
+    .table-wrap { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th {
+      padding: 15px 26px;
+      color: #92867e;
+      background: #fff8f2;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-size: 10px;
+      font-weight: 850;
+    }
+
+    td {
+      padding: 19px 26px;
+      border-bottom: 1px solid #f3eee9;
+      font-size: 14px;
+    }
+
+    tbody tr {
+      transition: background .2s;
+      animation: rowIn .35s ease both;
+    }
+
+    tbody tr:hover { background: #fff6ef; }
+    tbody tr:last-child td { border-bottom: 0; }
+
+    @keyframes rowIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .college-name {
+      font-weight: 750;
+      color: #332a25;
+    }
+
+    .count {
+      text-align: right;
+      font-weight: 850;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    th:last-child { text-align: right; }
+
+    .rank-cell { width: 90px; }
+
+    .rank-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 35px;
+      height: 35px;
+      border-radius: 10px;
+      background: #f5f1ed;
+      color: #64564d;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .rank-1 { background: #fff0c5; color: #a86b00; }
+    .rank-2 { background: #e9edf2; color: #526274; }
+    .rank-3 { background: #f9e2d1; color: #ad5725; }
+
+    .empty {
+      text-align: center;
+      padding: 42px 20px !important;
+      color: #958981;
+      font-size: 13px;
+    }
+
+    .panel-foot {
+      padding: 15px 26px;
+      background: #fffaf6;
+      border-top: 1px solid #f1e9e2;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      color: #9b8f86;
+      font-size: 11px;
+    }
+
+    .refresh {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 22px;
+      padding: 12px 17px;
+      color: white;
+      background: #ffffff16;
+      border: 1px solid #ffffff75;
+      border-radius: 10px;
+      cursor: pointer;
+      font: inherit;
+      font-size: 12px;
+      font-weight: 800;
+      transition: background .2s;
+    }
+
+    .refresh:hover { background: #ffffff30; }
+
+    .refresh:disabled { opacity: .6; cursor: wait; }
+
+    .status {
+      color: #fff0e4;
+      font-size: 11px;
+      text-align: center;
+      margin-top: 13px;
+      min-height: 16px;
+    }
+
+    .footer {
+      margin-top: 42px;
+      text-align: center;
+      color: #fff2e4c9;
+      font-size: 10px;
+      letter-spacing: 2px;
+      font-weight: 700;
+    }
+
+    @keyframes appear {
+      from { opacity: 0; transform: translateY(13px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 600px) {
+      .page { width: calc(100% - 24px); padding-top: 23px; }
+      .topbar { margin-bottom: 36px; }
+      .brand { font-size: 29px; }
+      .live-pill { font-size: 9px; padding: 8px 10px; }
+      .hero h1 { letter-spacing: -2.5px; }
+      .hero { padding-bottom: 29px; }
+      .hero p { font-size: 13px; }
+      .tab { padding: 12px 14px; font-size: 12px; }
+      .panel { border-radius: 17px; }
+      .panel-head { padding: 20px 17px; }
+      .search-area { padding: 18px 15px 14px; }
+      th { padding: 13px 16px; }
+      td { padding: 16px; font-size: 13px; }
+      .rank-cell { width: 65px; }
+      .panel-foot { padding: 14px 16px; }
+      .keyhint { display: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="ambient" aria-hidden="true">
+    <div class="orb one"></div>
+    <div class="orb two"></div>
+    <div class="orb three"></div>
+  </div>
+
+  <main class="page">
+
+    <header class="topbar">
+      <div class="brand">goibibo<span>.</span></div>
+      <div class="live-pill">
+        <span class="live-dot"></span>
+        COLLEGE CAMPAIGN
+      </div>
+    </header>
+
+    <section class="hero">
+      <div class="eyebrow">The campus leaderboard</div>
+      <h1>CODE <span class="outline">AGAIN.</span></h1>
+      <p>
+        Every college counts. Search your campus,
+        check your numbers, and see where you stand.
+      </p>
+      <div class="hero-tag">
+        <span>✦</span> THE COLLEGE EDITION
+      </div>
+    </section>
+
+    <nav class="tabs" aria-label="Dashboard views">
+      <button class="tab active" id="searchTab"
+        onclick="showView('search')">
+        ⌕ &nbsp; Search College
+      </button>
+      <button class="tab" id="leaderTab"
+        onclick="showView('leader')">
+        ↗ &nbsp; Leaderboard
+      </button>
+    </nav>
+
+    <!-- SEARCH VIEW: only college name and count -->
+    <section class="section" id="searchView">
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <h2 class="panel-title">Find your college</h2>
+            <p class="panel-subtitle">
+              One search. Your college's count.
+            </p>
+          </div>
+          <span class="number-pill" id="collegeTotal">LOADING</span>
+        </div>
+
+        <div class="search-area">
+          <div class="searchbox">
+            <svg class="search-icon" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round">
+              <circle cx="10.8" cy="10.8" r="7.3"></circle>
+              <path d="m16.2 16.2 4.3 4.3"></path>
+            </svg>
+            <input id="collegeSearch" type="search"
+              placeholder="Type your college name..."
+              autocomplete="off"
+              oninput="renderSearch()">
+            <span class="keyhint">SEARCH</span>
+          </div>
+          <div class="helper">
+            Start typing to instantly filter the colleges.
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>College name</th>
+                <th>Count</th>
+              </tr>
+            </thead>
+            <tbody id="searchResults">
+              <tr><td colspan="2" class="empty">
+                Loading college data...
+              </td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="panel-foot">
+          <span id="matchCount">All colleges</span>
+          <span>GOIBIBO · CODE AGAIN</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- LEADERBOARD VIEW -->
+    <section class="section hidden" id="leaderView">
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <h2 class="panel-title">The leaderboard</h2>
+            <p class="panel-subtitle">
+              Ranked by count · Highest first
+            </p>
+          </div>
+          <span class="number-pill">RANKINGS</span>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>College name</th>
+                <th>Count</th>
+              </tr>
+            </thead>
+            <tbody id="leaderResults">
+              <tr><td colspan="3" class="empty">
+                Loading leaderboard...
+              </td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="panel-foot">
+          <span>Rankings follow the latest sheet data.</span>
+          <span>GOIBIBO · CODE AGAIN</span>
+        </div>
+      </div>
+    </section>
+
+    <div style="text-align:center">
+      <button class="refresh" id="refreshButton"
+        onclick="loadData()">
+        <span id="refreshIcon">↻</span>
+        Refresh live data
+      </button>
+      <div class="status" id="status" role="status">
+        Connecting to your Google Sheet...
+      </div>
+    </div>
+
+    <footer class="footer">
+      MADE FOR THE CAMPUS. BUILT TO COUNT.
+    </footer>
+  </main>
+
+  <script>
+    let colleges = [];
+    let requestInProgress = false;
+
+    function showView(view) {
+      const isSearch = view === 'search';
+
+      document.getElementById('searchView')
+        .classList.toggle('hidden', !isSearch);
+
+      document.getElementById('leaderView')
+        .classList.toggle('hidden', isSearch);
+
+      document.getElementById('searchTab')
+        .classList.toggle('active', isSearch);
+
+      document.getElementById('leaderTab')
+        .classList.toggle('active', !isSearch);
+    }
+
+    function safe(value) {
+      return String(value).replace(/[&<>"']/g, ch => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      })[ch]);
+    }
+
+    function number(value) {
+      return Number(value).toLocaleString('en-IN');
+    }
+
+    function loadData() {
+      if (requestInProgress) return;
+
+      requestInProgress = true;
+
+      const button = document.getElementById('refreshButton');
+      button.disabled = true;
+      document.getElementById('refreshIcon').textContent = '⟳';
+      document.getElementById('status').textContent =
+        'Syncing the latest college counts...';
+
+      google.script.run
+        .withSuccessHandler(data => {
+          colleges = Array.isArray(data) ? data : [];
+          renderSearch();
+          renderLeaderboard();
+
+          document.getElementById('collegeTotal').textContent =
+            number(colleges.length) + ' COLLEGES';
+
+          document.getElementById('status').textContent =
+            'Last synced at ' +
+            new Date().toLocaleTimeString('en-IN', {
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit'
+            });
+
+          requestInProgress = false;
+          button.disabled = false;
+          document.getElementById('refreshIcon').textContent = '↻';
+        })
+        .withFailureHandler(error => {
+          document.getElementById('status').textContent =
+            'Could not load data. ' +
+            (error && error.message ? error.message : 'Please retry.');
+
+          requestInProgress = false;
+          button.disabled = false;
+          document.getElementById('refreshIcon').textContent = '↻';
+        })
+        .getLeaderboard();
+    }
+
+    function renderSearch() {
+      const query = document.getElementById('collegeSearch')
+        .value.trim().toLowerCase();
+
+      const results = colleges.filter(item =>
+        item.college.toLowerCase().includes(query)
+      );
+
+      const body = document.getElementById('searchResults');
+
+      document.getElementById('matchCount').textContent =
+        query
+          ? results.length + ' matching college(s)'
+          : 'Showing all ' + colleges.length + ' colleges';
+
+      if (!results.length) {
+        body.innerHTML =
+          '<tr><td colspan="2" class="empty">' +
+          (query
+            ? 'No college matches that search. Try another name.'
+            : 'No college data found.') +
+          '</td></tr>';
+        return;
+      }
+
+      body.innerHTML = results.map((item, i) => `
+        <tr style="animation-delay:${Math.min(i * 25, 250)}ms">
+          <td class="college-name">${safe(item.college)}</td>
+          <td class="count">${number(item.count)}</td>
+        </tr>
+      `).join('');
+    }
+
+    function renderLeaderboard() {
+      const body = document.getElementById('leaderResults');
+
+      if (!colleges.length) {
+        body.innerHTML =
+          '<tr><td colspan="3" class="empty">' +
+          'No leaderboard data available.</td></tr>';
+        return;
+      }
+
+      body.innerHTML = colleges.map((item, i) => {
+        const rank = Number(item.rank) || i + 1;
+        const rankClass =
+          rank === 1 ? 'rank-1' :
+          rank === 2 ? 'rank-2' :
+          rank === 3 ? 'rank-3' : '';
+
+        const displayRank =
+          rank === 1 ? '1st' :
+          rank === 2 ? '2nd' :
+          rank === 3 ? '3rd' : rank;
+
+        return `
+          <tr style="animation-delay:${Math.min(i * 25, 250)}ms">
+            <td class="rank-cell">
+              <span class="rank-badge ${rankClass}">
+                ${displayRank}
+              </span>
+            </td>
+            <td class="college-name">${safe(item.college)}</td>
+            <td class="count">${number(item.count)}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    loadData();
+  </script>
+</body>
+</html>
